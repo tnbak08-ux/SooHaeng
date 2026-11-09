@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#f5f7fb" />
+  <meta name="description" content="책상을 자유롭게 배치하고 모둠 만들기를 누르면 이동거리가 짧은 모둠 배치를 찾아주는 웹앱" />
+  <title>Desk Optimizer | 교실 책상 모둠 배치</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="optimizer.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <div class="brand"><span class="brand-symbol" aria-hidden="true">▦</span><div><div class="eyebrow">CLASSROOM TOOLKIT</div><h1>Desk Optimizer</h1></div></div>
+      <span class="header-note">교실 책상 모둠 배치 최적화</span>
+    </header>
+
+    <main>
+      <section class="intro">
+        <div><h2>책상을 옮기는 가장 효율적인 방법을 찾아보세요.</h2>
+          <p>왼쪽에 책상을 자유롭게 놓고 <strong>모둠 만들기</strong>를 누르면, 오른쪽에 이동거리를 줄인 모둠 배치가 나타납니다.</p>
+        </div>
+        <span class="offline-pill"><span class="status-dot"></span> 브라우저 내부에서 계산</span>
+      </section>
+
+      <section class="toolbar" aria-label="배치 설정">
+        <div class="control-block">
+          <span class="control-label">전체 책상 수</span>
+          <div class="stepper"><button type="button" id="desk-minus" aria-label="책상 한 개 줄이기">−</button><output id="desk-count" aria-live="polite">14</output><button type="button" id="desk-plus" aria-label="책상 한 개 늘리기">+</button></div>
+        </div>
+        <div class="control-block">
+          <span class="control-label">모둠당 최대 책상 수</span>
+          <div class="stepper"><button type="button" id="group-minus" aria-label="모둠당 책상 한 개 줄이기">−</button><output id="group-size" aria-live="polite">4</output><button type="button" id="group-plus" aria-label="모둠당 책상 한 개 늘리기">+</button></div>
+        </div>
+        <div class="control-block gap-control"><label class="control-label" for="group-gap">모둠 사이 간격 <output id="gap-label">24</output></label>
+          <input type="range" id="group-gap" min="8" max="52" step="4" value="24" aria-label="모둠 사이 최소 간격" /></div>
+        <div class="toolbar-actions"><button type="button" class="button-quiet" id="scatter">↝ 책상 흩기</button><button type="button" class="button-primary" id="make-groups"><span class="button-icon">✦</span> 모둠 만들기</button></div>
+      </section>
+
+      <section class="map-grid" aria-label="교실 책상 배치 비교">
+        <article class="map-panel">
+          <div class="panel-head"><div><span class="overline">INPUT</span><h3>현재 책상 배치</h3></div><span class="panel-chip blue">자유 드래그</span></div>
+          <div class="room-wrap"><svg id="current-room" class="room-svg interactive-room" viewBox="0 0 920 560" aria-label="현재 교실 책상 배치: 책상을 드래그해서 이동" role="img"><rect class="room-bg" x="1" y="1" width="918" height="558" rx="10"/></svg></div>
+          <div class="panel-foot"><span class="mini-dot blue-dot"></span> 책상을 마우스 또는 손가락으로 끌어 이동하세요.</div>
+        </article>
+        <article class="map-panel">
+          <div class="panel-head"><div><span class="overline">OUTPUT</span><h3>최적화된 모둠 배치</h3></div><span id="result-status" class="panel-chip gray">계산 전</span></div>
+          <div class="room-wrap result-room-wrap"><svg id="result-room" class="room-svg" viewBox="0 0 920 560" aria-label="자동 계산된 모둠 배치" role="img"><rect class="room-bg" x="1" y="1" width="918" height="558" rx="10"/></svg>
+            <div id="empty-state" class="empty-state"><span class="empty-symbol" aria-hidden="true">▦</span><strong>아직 배치 결과가 없어요</strong><span>왼쪽에서 책상을 배치한 뒤<br>모둠 만들기를 눌러보세요.</span></div>
+          </div>
+          <div class="panel-foot"><span class="mini-dot green-dot"></span> 번호가 같은 책상끼리 현재 위치와 목표 위치를 비교하세요.</div>
+        </article>
+      </section>
+
+      <div id="notice" class="notice" role="status" aria-live="polite">준비 완료. 책상을 드래그해서 배치를 바꿔보세요.</div>
+
+      <section id="results" class="results" hidden>
+        <div class="summary-grid"><div class="metric"><div class="metric-label">탐색된 총 이동거리</div><div class="metric-number"><span id="total-distance">0</span><span class="metric-unit">가상 단위</span></div></div><div class="metric"><div class="metric-label">모둠 구성</div><div id="group-composition" class="metric-number smaller">—</div></div><div class="metric"><div class="metric-label">책상당 평균 이동거리</div><div class="metric-number"><span id="average-distance">0</span><span class="metric-unit">가상 단위</span></div></div></div>
+        <div class="detail-header"><div><h3>책상별 이동 안내</h3><p>행을 선택하면 오른쪽 교실에서 출발 위치와 도착 위치를 화살표로 보여줍니다.</p></div><button type="button" id="clear-selection" class="button-quiet compact">선택 해제</button></div>
+        <div class="table-scroll"><table><thead><tr><th>책상</th><th>모둠</th><th>이동 방향</th><th>이동거리</th></tr></thead><tbody id="movement-table"></tbody></table></div>
+        <p class="technical-note">이동거리는 교실 도면의 가상 좌표에서 계산한 직선거리입니다. 실제 이동 경로의 장애물이나 작업 순서는 반영하지 않았습니다. 모둠 배치에는 근사 탐색을 사용하므로 전역 최적해를 보장하지 않습니다.</p>
+      </section>
+    </main>
+    <footer>Copyright 2026. Park All rights reserved.</footer>
+  </div>
+</body>
+</html>
